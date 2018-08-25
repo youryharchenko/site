@@ -7,10 +7,19 @@
     <link rel="stylesheet" href="learn_gl.css">
   </head>
   <body>
-    <div id="fps" style="float: left; position: absolute; color: green"></div>
-    <canvas id="lesson01-canvas" style="border: none;" width="500" height="500"></canvas>
-    <br /><select id="lessonNumber"></select>
-    <div id="lesson_html"></div>
+    <div style="display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;">
+  
+      <div id="fps" style="float: left; position: absolute; color: green"></div>
+      <canvas id="lesson01-canvas" style="border: none; margin-top: 15px;" width="500" height="500"></canvas>
+      <div style="margin-top: 15px; margin-bottom: 15px;">
+        <select id="lessonNumber"></select>
+      </div>  
+      <div id="lesson_html"></div>
+     </div>
     <script defer src="learn_gl.dart.js"></script>
   </body>
 </html>
