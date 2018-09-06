@@ -806,9 +806,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","358");
+		_this.setReserved("build","365");
 	} else {
-		_this.h["build"] = "358";
+		_this.h["build"] = "365";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -4155,19 +4155,20 @@ var Desk = function() {
 		var game = new Game(_gthis.steps,"play");
 		var calcGame = game.calculate();
 		haxe_Log.trace(calcGame,{ fileName : "Desk.hx", lineNumber : 67, className : "Desk", methodName : "new"});
-		if(calcGame.getMessage() == "over") {
-			_gthis.play = false;
-			_gthis.overDialog = new OverDialog();
-			_gthis.overDialog.opts.title = "Game over.";
-			_gthis.dialog = haxe_ui_core_Screen.get_instance().showDialog(_gthis.overDialog,_gthis.overDialog.opts,$bind(_gthis,_gthis.dialogHandler));
-		} else {
+		if(calcGame.getMessage() == "play") {
 			var newSteps = calcGame.getSteps();
 			var tmp = newSteps.pop();
 			_gthis.addStep(tmp);
+		} else {
+			_gthis.play = false;
+			_gthis.overDialog = new OverDialog();
+			var tmp1 = calcGame.getMessage();
+			_gthis.overDialog.opts.title = "Game " + tmp1;
+			_gthis.dialog = haxe_ui_core_Screen.get_instance().showDialog(_gthis.overDialog,_gthis.overDialog.opts,$bind(_gthis,_gthis.dialogHandler));
 		}
 		openfl_ui_Mouse.set_cursor("arrow");
 		_gthis.thinking = false;
-		haxe_Log.trace("TimerEvent finish " + Std.string(d),{ fileName : "Desk.hx", lineNumber : 86, className : "Desk", methodName : "new"});
+		haxe_Log.trace("TimerEvent finish " + Std.string(d),{ fileName : "Desk.hx", lineNumber : 85, className : "Desk", methodName : "new"});
 	});
 };
 $hxClasses["Desk"] = Desk;
@@ -4186,7 +4187,7 @@ Desk.prototype = $extend(openfl_display_Sprite.prototype,{
 	,dialog: null
 	,overDialog: null
 	,dialogHandler: function(b) {
-		haxe_Log.trace(b,{ fileName : "Desk.hx", lineNumber : 94, className : "Desk", methodName : "dialogHandler"});
+		haxe_Log.trace(b,{ fileName : "Desk.hx", lineNumber : 93, className : "Desk", methodName : "dialogHandler"});
 		var _g = 0;
 		var _g1 = this.steps;
 		while(_g < _g1.length) {
@@ -4260,7 +4261,7 @@ Desk.prototype = $extend(openfl_display_Sprite.prototype,{
 			return;
 		}
 		var field = event.currentTarget;
-		haxe_Log.trace("Field " + Std.string(field) + " " + Std.string(event),{ fileName : "Desk.hx", lineNumber : 163, className : "Desk", methodName : "field_onMouseUp"});
+		haxe_Log.trace("Field " + Std.string(field) + " " + Std.string(event),{ fileName : "Desk.hx", lineNumber : 162, className : "Desk", methodName : "field_onMouseUp"});
 		var c = 1 + this.steps.length % 2;
 		var step = new Step(field.getx(),field.gety(),c,this.steps.length);
 		this.addStep(step);
@@ -4304,7 +4305,7 @@ Desk.prototype = $extend(openfl_display_Sprite.prototype,{
 	}
 	,addStep: function(s) {
 		this.steps.push(s);
-		haxe_Log.trace("New step: " + this.steps.length + " " + Std.string(s),{ fileName : "Desk.hx", lineNumber : 213, className : "Desk", methodName : "addStep"});
+		haxe_Log.trace("New step: " + this.steps.length + " " + Std.string(s),{ fileName : "Desk.hx", lineNumber : 212, className : "Desk", methodName : "addStep"});
 		s.set_x(this.calcTo(s.getx()));
 		s.set_y(this.calcTo(s.gety()));
 		s.addEventListener("mouseOver",$bind(this,this.step_onMouseOver));
@@ -4481,14 +4482,14 @@ Game.prototype = $extend(openfl_events_EventDispatcher.prototype,{
 		var net = this.newNet(g.steps);
 		var ret;
 		if(this.checkOver(net)) {
-			ret = new Game(g.getSteps(),"over");
+			ret = new Game(g.getSteps(),"over. You win!");
 		} else {
 			var nextStep = this.calcStep(net);
 			var nextNet = this.applyStep(net,nextStep);
 			var steps = g.getSteps();
 			steps.push(nextStep);
 			if(this.checkOver(nextNet)) {
-				ret = new Game(steps,"over");
+				ret = new Game(steps,"over. I win!");
 			} else {
 				ret = new Game(steps,"play");
 			}
@@ -4757,12 +4758,18 @@ Game.prototype = $extend(openfl_events_EventDispatcher.prototype,{
 			mess = "Slot4: c:" + ac(c) + ", points: " + Std.string(ps);
 		}
 		if(ps.length == 0) {
+			ps = this.findPointX(net,c);
+			mess = "";
+		}
+		if(ps.length == 0) {
 			ps = this.calcPointMaxRate(net,c);
 			mess = "MaxRate: c:" + c + ", points: " + Std.string(ps);
 		}
 		if(ps.length > 0) {
-			haxe_Log.trace(mess,{ fileName : "Game.hx", lineNumber : 269, className : "Game", methodName : "calcStep"});
-			p = ps[Math.round(Math.random() * ps.length - 0.5)];
+			if(mess.length > 0) {
+				haxe_Log.trace(mess,{ fileName : "Game.hx", lineNumber : 275, className : "Game", methodName : "calcStep"});
+			}
+			p = ps[Math.floor(Math.random() * ps.length)];
 		} else {
 			throw new js__$Boot_HaxeError("Error: new step not found");
 		}
@@ -4781,6 +4788,76 @@ Game.prototype = $extend(openfl_events_EventDispatcher.prototype,{
 		}
 		var points = _g;
 		return points;
+	}
+	,findPointX: function(net,c) {
+		var _gthis = this;
+		var xPoint = function(p,c1,r) {
+			var _g = [];
+			var _g1 = 0;
+			var _g2 = net.union;
+			while(_g1 < _g2.length) {
+				var u = _g2[_g1];
+				++_g1;
+				if(u.point.x == p.x && u.point.y == p.y) {
+					_g.push(u.slot);
+				}
+			}
+			var pointSlots = _g;
+			var i = 0;
+			var _g11 = 0;
+			while(_g11 < pointSlots.length) {
+				var s = pointSlots[_g11];
+				++_g11;
+				if(s.ss == c1 && s.rs > r) {
+					++i;
+				}
+			}
+			return i;
+		};
+		var findX = function(c2,r1,b) {
+			var ep = _gthis.emptyPoints(net);
+			var _g3 = [];
+			var _g12 = 0;
+			while(_g12 < ep.length) {
+				var p1 = ep[_g12];
+				++_g12;
+				_g3.push({ r : xPoint(p1,c2,r1), p : p1});
+			}
+			var a = _g3;
+			var m = 0;
+			var _g13 = 0;
+			while(_g13 < a.length) {
+				var e = a[_g13];
+				++_g13;
+				if(e.r > m) {
+					m = e.r;
+				}
+			}
+			var _g14 = [];
+			var _g21 = 0;
+			while(_g21 < a.length) {
+				var e1 = a[_g21];
+				++_g21;
+				if(e1.r == m && e1.r > b) {
+					_g14.push(e1.p);
+				}
+			}
+			var ret = _g14;
+			return ret;
+		};
+		var ac = function(c3) {
+			return 3 - c3;
+		};
+		var ps = findX(c,2,1);
+		var mess = "FindX: c:" + c + ", r:2, b:1, points: " + Std.string(ps);
+		if(ps.length == 0) {
+			ps = findX(ac(c),2,1);
+			mess = "FindX: c:" + ac(c) + ", r:2, b:1, points: " + Std.string(ps);
+		}
+		if(ps.length > 0) {
+			haxe_Log.trace(mess,{ fileName : "Game.hx", lineNumber : 347, className : "Game", methodName : "findPointX"});
+		}
+		return ps;
 	}
 	,calcPointMaxRate: function(net,c) {
 		var ep = this.emptyPoints(net);
